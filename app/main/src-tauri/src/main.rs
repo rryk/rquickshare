@@ -15,7 +15,7 @@ use store::get_startminimized;
 use tauri::image::Image;
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder},
-    tray::TrayIconBuilder,
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     AppHandle, Emitter, Manager, Window, WindowEvent,
 };
 use tauri_plugin_autostart::MacosLauncher;
@@ -107,6 +107,18 @@ async fn main() -> Result<(), anyhow::Error> {
                     "quit" => {
                         trace!("tray_quit");
                         kill_app(app.app_handle());
+                    }
+                    _ => (),
+                })
+                .show_menu_on_left_click(false)
+                .on_tray_icon_event(move |tray, event| match event {
+                    TrayIconEvent::Click {
+                        button: MouseButton::Left,
+                        button_state: MouseButtonState::Up,
+                        ..
+                    } => {
+                        trace!("tray_double_click");
+                        open_main_window(tray.app_handle());
                     }
                     _ => (),
                 })
